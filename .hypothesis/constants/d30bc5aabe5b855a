@@ -1,0 +1,4 @@
+# file: /Users/zhangjingsen/Desktop/playground/life-planner/pl_dss/config.py
+# hypothesis_version: 6.150.0
+
+['ALLOWED', 'CONTAINMENT', 'DENIED', 'NORMAL', 'OVERLOADED', 'RECOVERY', 'STRESSED', 'authority_derivation', 'avg_energy_score', 'config.yaml', 'downgrade_rules', 'execution', 'fixed_deadlines_14d', 'mode', 'overload', 'planning', 'r', 'recovery', 'recovery_advice', 'thresholds']

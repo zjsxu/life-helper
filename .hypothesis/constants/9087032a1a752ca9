@@ -1,0 +1,4 @@
+# file: /Users/zhangjingsen/Desktop/playground/life-planner/pl_dss/scenario_runner.py
+# hypothesis_version: 6.150.0
+
+['(none)', '.json', '.yaml', '.yml', 'ACTIVE RULES:', 'AUTHORITY:', 'CONTAINMENT', 'DENIED', 'NORMAL', 'OVERLOADED', 'STRESSED', 'advisory_blocked', 'advisory_contains', 'advisory_scenarios', 'constraints', 'deadline', 'execution', 'expected', 'fixed_deadlines_14d', 'inputs', 'max_parallel_focus', 'mode', 'name', 'no_work_after', 'planning', 'r', 'scenarios', 'state', 'tasks', 'type']

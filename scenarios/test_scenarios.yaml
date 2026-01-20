@@ -1,0 +1,232 @@
+# ============================================================================
+# Personal Life Orchestrator (PLO) - Test Scenarios
+# ============================================================================
+# This file contains test scenarios that demonstrate the PLO system behavior
+# across different Decision Core states (NORMAL, STRESSED, OVERLOADED).
+#
+# Each scenario includes:
+#   - name: Descriptive scenario name
+#   - inputs: Decision Core inputs (deadlines, domains, energy scores)
+#   - expected: Expected system outputs (state, planning, execution, mode)
+#
+# These scenarios validate that:
+#   1. Authority is correctly derived from Decision Core state
+#   2. Planning permission follows state rules
+#   3. Execution is always denied (safety-first design)
+#   4. System behavior is predictable and verifiable
+# ============================================================================
+
+scenarios:
+  # --------------------------------------------------------------------------
+  # SCENARIO 1: Sudden Load Spike (OVERLOADED)
+  # --------------------------------------------------------------------------
+  # Simulates a sudden increase in commitments and cognitive load with low
+  # energy. This triggers OVERLOADED state, which denies all planning and
+  # execution, and activates CONTAINMENT mode.
+  #
+  # Conditions met: 3/3 overload thresholds
+  #   - 4 deadlines >= 3 threshold ✓
+  #   - 3 domains >= 3 threshold ✓
+  #   - avg energy 2.0 <= 2 threshold ✓
+  - name: "Sudden Load Spike"
+    inputs:
+      fixed_deadlines_14d: 4
+      active_high_load_domains: 3
+      energy_scores_last_3_days: [2, 2, 2]
+    expected:
+      state: OVERLOADED
+      planning: DENIED
+      execution: DENIED
+      mode: CONTAINMENT
+
+  # --------------------------------------------------------------------------
+  # SCENARIO 2: Gradual Stress (STRESSED)
+  # --------------------------------------------------------------------------
+  # Simulates moderate load with borderline conditions. This triggers STRESSED
+  # state (exactly 1 overload condition met), which denies planning and
+  # execution, and activates CONTAINMENT mode.
+  #
+  # Conditions met: 1/3 overload thresholds
+  #   - 3 deadlines >= 3 threshold ✓
+  #   - 2 domains < 3 threshold ✗
+  #   - avg energy 3.0 > 2 threshold ✗
+  - name: "Gradual Stress"
+    inputs:
+      fixed_deadlines_14d: 3
+      active_high_load_domains: 2
+      energy_scores_last_3_days: [3, 3, 3]
+    expected:
+      state: STRESSED
+      planning: DENIED
+      execution: DENIED
+      mode: CONTAINMENT
+
+  # --------------------------------------------------------------------------
+  # SCENARIO 3: Normal Operation (NORMAL)
+  # --------------------------------------------------------------------------
+  # Simulates healthy operational state with low commitments and good energy.
+  # This triggers NORMAL state, which allows planning (but execution still
+  # denied for safety), and activates NORMAL mode.
+  #
+  # Conditions met: 0/3 overload thresholds
+  #   - 1 deadline < 3 threshold ✗
+  #   - 1 domain < 3 threshold ✗
+  #   - avg energy 4.33 > 2 threshold ✗
+  - name: "Normal Operation"
+    inputs:
+      fixed_deadlines_14d: 1
+      active_high_load_domains: 1
+      energy_scores_last_3_days: [4, 4, 5]
+    expected:
+      state: NORMAL
+      planning: ALLOWED
+      execution: DENIED
+      mode: NORMAL
+
+  # --------------------------------------------------------------------------
+  # SCENARIO 4: Recovery Transition (NORMAL after stress)
+  # --------------------------------------------------------------------------
+  # Simulates recovery from stressed state. Deadlines have cleared, domains
+  # reduced, and energy stabilized. This demonstrates the recovery path back
+  # to NORMAL state with planning allowed.
+  #
+  # Recovery conditions met: 3/3
+  #   - 1 deadline <= 1 threshold ✓
+  #   - 2 domains <= 2 threshold ✓
+  #   - avg energy 4.0 >= 4 threshold ✓
+  - name: "Recovery Transition"
+    inputs:
+      fixed_deadlines_14d: 1
+      active_high_load_domains: 2
+      energy_scores_last_3_days: [4, 4, 4]
+    expected:
+      state: NORMAL
+      planning: ALLOWED
+      execution: DENIED
+      mode: NORMAL
+
+# ============================================================================
+# Advisory Scenarios
+# ============================================================================
+# These scenarios test the Planning Advisor functionality, which provides
+# high-level task analysis and recommendations when planning is ALLOWED.
+#
+# Each advisory scenario includes:
+#   - name: Descriptive scenario name
+#   - inputs: Decision Core inputs + tasks + constraints
+#   - expected: Expected state, planning permission, and advisory content
+#
+# Advisory scenarios validate that:
+#   1. Planning Advisor respects Global Authority
+#   2. Deadline clustering is detected correctly
+#   3. Cognitive load assessment works properly
+#   4. Advisory output is descriptive, not prescriptive
+#   5. Blocked advisory returns appropriate message
+# ============================================================================
+
+advisory_scenarios:
+  # --------------------------------------------------------------------------
+  # ADVISORY SCENARIO 1: Deadline Clustering
+  # --------------------------------------------------------------------------
+  # Simulates a NORMAL state with 3 tasks whose deadlines fall within a
+  # 3-day window (Feb 11-13). This should trigger deadline clustering
+  # detection and cognitive load warnings.
+  #
+  # Expected advisory content:
+  #   - Observation: "3 deadlines fall within a 3-day window"
+  #   - Observation: "Cognitive load likely exceeds safe threshold"
+  #   - Recommendations for prioritization
+  - name: "Deadline Clustering"
+    inputs:
+      fixed_deadlines_14d: 1
+      active_high_load_domains: 1
+      energy_scores_last_3_days: [4, 4, 5]
+      tasks:
+        - name: "ML Homework 3"
+          deadline: "2026-02-12"
+          type: "coursework"
+        - name: "Org meeting prep"
+          deadline: "2026-02-11"
+          type: "admin"
+        - name: "Internship deliverable"
+          deadline: "2026-02-13"
+          type: "work"
+      constraints:
+        max_parallel_focus: 2
+        no_work_after: "22:00"
+    expected:
+      state: NORMAL
+      planning: ALLOWED
+      advisory_contains:
+        - "3 deadlines"
+        - "3-day window"
+        - "Cognitive load"
+
+  # --------------------------------------------------------------------------
+  # ADVISORY SCENARIO 2: Cognitive Overload
+  # --------------------------------------------------------------------------
+  # Simulates a NORMAL state with 4 tasks that exceed the max_parallel_focus
+  # constraint of 2. This should trigger cognitive overload warnings and
+  # prioritization suggestions.
+  #
+  # Expected advisory content:
+  #   - Observation: Task count exceeds max_parallel_focus
+  #   - Warning: Cognitive load exceeds safe threshold
+  #   - Recommendations for scope minimization
+  - name: "Cognitive Overload"
+    inputs:
+      fixed_deadlines_14d: 1
+      active_high_load_domains: 1
+      energy_scores_last_3_days: [4, 4, 5]
+      tasks:
+        - name: "Database project"
+          deadline: "2026-02-20"
+          type: "coursework"
+        - name: "Research paper"
+          deadline: "2026-02-22"
+          type: "coursework"
+        - name: "Team presentation"
+          deadline: "2026-02-18"
+          type: "work"
+        - name: "Budget review"
+          deadline: "2026-02-25"
+          type: "admin"
+      constraints:
+        max_parallel_focus: 2
+        no_work_after: "22:00"
+    expected:
+      state: NORMAL
+      planning: ALLOWED
+      advisory_contains:
+        - "Cognitive load"
+        - "exceeds"
+        - "threshold"
+
+  # --------------------------------------------------------------------------
+  # ADVISORY SCENARIO 3: Blocked Advisory
+  # --------------------------------------------------------------------------
+  # Simulates an OVERLOADED state where planning is DENIED. Even though tasks
+  # are provided, the Planning Advisor should return a blocked message and
+  # provide NO analysis or suggestions.
+  #
+  # Expected behavior:
+  #   - Advisory blocked message: "ADVICE BLOCKED"
+  #   - Reason: "Planning forbidden by Decision Core"
+  #   - NO task analysis
+  #   - NO recommendations
+  - name: "Blocked Advisory"
+    inputs:
+      fixed_deadlines_14d: 4
+      active_high_load_domains: 3
+      energy_scores_last_3_days: [2, 2, 2]
+      tasks:
+        - name: "Task 1"
+          deadline: "2026-02-12"
+          type: "work"
+      constraints:
+        max_parallel_focus: 2
+    expected:
+      state: OVERLOADED
+      planning: DENIED
+      advisory_blocked: true
+      blocked_reason: "Planning forbidden by Decision Core"

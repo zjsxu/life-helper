@@ -1,0 +1,4 @@
+# file: /Users/zhangjingsen/Desktop/playground/life-planner/pl_dss/main.py
+# hypothesis_version: 6.150.0
+
+[130, '--config', '--deadlines', '--domains', '--energy', 'Active Rules:\n', 'N', 'Not ready', 'PATH', 'Ready', 'SCORE', '__main__', 'config.yaml']

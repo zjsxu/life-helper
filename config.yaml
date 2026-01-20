@@ -1,0 +1,100 @@
+# ============================================================================
+# Personal Life Decision-Support System (PL-DSS) Configuration
+# ============================================================================
+# This file defines all thresholds, rules, and recovery conditions for the
+# decision-support system. Adjust these values to match your personal needs.
+#
+# The system evaluates your state based on three inputs:
+#   1. Fixed deadlines in the next 14 days (non-movable commitments)
+#   2. Active high-load domains (work projects, family crises, health issues)
+#   3. Energy scores for the last 3 days (1=lowest, 5=highest)
+# ============================================================================
+
+# ----------------------------------------------------------------------------
+# THRESHOLDS: Define when state transitions occur
+# ----------------------------------------------------------------------------
+thresholds:
+  # OVERLOAD THRESHOLDS
+  # The system enters OVERLOADED state when 2 or more of these conditions are true:
+  #   - fixed_deadlines_14d >= threshold
+  #   - active_high_load_domains >= threshold
+  #   - average energy score <= threshold
+  # The system enters STRESSED state when exactly 1 condition is true.
+  overload:
+    fixed_deadlines_14d: 3        # Trigger: 3+ non-movable deadlines in next 2 weeks
+    active_high_load_domains: 3   # Trigger: 3+ life domains requiring high cognitive load
+    avg_energy_score: 2           # Trigger: Average energy <= 2 (on 1-5 scale)
+  
+  # RECOVERY THRESHOLDS
+  # The system allows recovery to NORMAL when ALL of these conditions are true:
+  #   - fixed_deadlines_14d <= threshold
+  #   - active_high_load_domains <= threshold
+  #   - average energy score >= threshold
+  # These are intentionally stricter than overload thresholds to prevent yo-yo behavior.
+  recovery:
+    fixed_deadlines_14d: 1        # Recovery: 1 or fewer deadlines remaining
+    active_high_load_domains: 2   # Recovery: 2 or fewer high-load domains active
+    avg_energy_score: 4           # Recovery: Average energy >= 4 (sustained high energy)
+
+# ----------------------------------------------------------------------------
+# DOWNGRADE RULES: Behavioral constraints for each state
+# ----------------------------------------------------------------------------
+# These rules are displayed when you're in STRESSED or OVERLOADED state.
+# They serve as pre-defined guidelines to prevent collapse.
+# Customize these to match your personal boundaries and priorities.
+downgrade_rules:
+  # OVERLOADED STATE RULES
+  # When 2+ overload conditions are met, follow these rules strictly:
+  OVERLOADED:
+    - "No new commitments"
+    - "Pause technical tool development"
+    - "Creative work reduced to minimum viable expression"
+    - "Administrative work: only non-delegable tasks"
+  
+  # STRESSED STATE RULES
+  # When exactly 1 overload condition is met, use caution:
+  STRESSED:
+    - "Warning: approaching overload"
+    - "Discourage new projects"
+    - "Suggest creating time buffers"
+
+# ----------------------------------------------------------------------------
+# RECOVERY ADVICE: Messages shown when recovery is possible
+# ----------------------------------------------------------------------------
+# These messages are displayed when all recovery conditions are met.
+# They provide positive reinforcement that it's safe to return to normal mode.
+recovery_advice:
+  - "Deadlines have cleared"
+  - "High-load domains have reduced"
+  - "Energy levels have stabilized"
+
+# ----------------------------------------------------------------------------
+# AUTHORITY DERIVATION: PLO Layer permissions based on Decision Core state
+# ----------------------------------------------------------------------------
+# These rules define what the Planning Engine (L1) and Execution Layer (L2)
+# are allowed to do based on the Decision Core's state evaluation.
+# 
+# Permissions:
+#   - planning: ALLOWED | DENIED (whether Planning Engine can propose plans)
+#   - execution: ALLOWED | DENIED (whether Execution Layer can run automation)
+#   - mode: NORMAL | CONTAINMENT | RECOVERY (operational mode)
+#
+# Safety-first design: execution is ALWAYS DENIED in this system version.
+authority_derivation:
+  # OVERLOADED STATE: Deny all planning and execution
+  OVERLOADED:
+    planning: DENIED
+    execution: DENIED
+    mode: CONTAINMENT
+  
+  # STRESSED STATE: Deny all planning and execution
+  STRESSED:
+    planning: DENIED
+    execution: DENIED
+    mode: CONTAINMENT
+  
+  # NORMAL STATE: Allow planning, but execution still denied
+  NORMAL:
+    planning: ALLOWED
+    execution: DENIED  # Always denied in this version
+    mode: NORMAL

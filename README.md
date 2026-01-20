@@ -287,6 +287,105 @@ authority_derivation:
 - **Explicit Denial**: Prefer explicit denial over implicit permission
 - **Demonstrable Correctness**: Scenario-based validation without GUI
 
+## Stability Notice
+
+**v0.3-stable freezes the Decision Core and Authority layer.**
+
+As of v0.3-stable, the following components are **immutable** and will not be modified in future releases:
+
+- **Decision Core** (`pl_dss/evaluator.py`, `pl_dss/rules.py`, `pl_dss/recovery.py`)
+- **Global Authority** (`pl_dss/authority.py`)
+- **Containment rules and thresholds** (in `config.yaml`)
+
+**No future feature may bypass or modify these frozen layers.** This freeze ensures that the safety-critical decision logic remains stable and predictable. All new functionality must be built on top of these frozen components without altering their behavior.
+
+The frozen state is marked with git tag `v0.3-stable` for verification.
+
+## System Constitution
+
+The Personal Life Orchestrator operates under these **immutable rules**:
+
+1. **Decision Core is the sole authority.** All system decisions derive from the Decision Core's state evaluation. No component may override or bypass this authority.
+
+2. **Authority derives exclusively from Decision Core.** The Global Authority object is computed from Decision Core output using fixed derivation rules. No other source of authority is permitted.
+
+3. **Agents may analyze but never decide.** Future AI agents or planning systems may provide advisory analysis, but they cannot make decisions, grant permissions, or execute actions.
+
+4. **Execution is disabled by design.** The Execution Layer (L2) is structurally disabled in the current system version. Automation cannot run without explicit architectural changes.
+
+5. **No automation may bypass authority checks.** Every operation that could affect system behavior must check Global Authority first. There are no backdoors or override mechanisms.
+
+These rules form the constitutional foundation of the system and cannot be modified without violating the system's safety guarantees.
+
+## GitHub Interface
+
+The Personal Life Orchestrator can be used through GitHub Issues, enabling daily check-ins without requiring CLI access.
+
+### Creating a Life Check-in
+
+1. **Go to Issues → New Issue** in your repository
+2. **Select "Life Check-in" template** from the issue templates
+3. **Fill in required fields:**
+   - **Non-movable deadlines (next 14 days)**: Enter an integer (e.g., `4`)
+   - **Active high-load domains**: Enter an integer (e.g., `3`)
+   - **Energy (1–5, comma-separated)**: Enter three scores separated by commas (e.g., `2,3,2`)
+4. **Optionally add tasks/commitments** in the free text area (for future Planning Engine integration)
+5. **Submit the Issue**
+
+The system will automatically evaluate your state and post a response as a comment within seconds.
+
+### Understanding the Response
+
+The automated response includes:
+
+- **Current State**: NORMAL, STRESSED, or OVERLOADED
+- **Planning Permission**: ALLOWED or DENIED (based on your state)
+- **Execution Permission**: Always DENIED (automation is disabled)
+- **Authority Mode**: NORMAL, CONTAINMENT, or RECOVERY
+- **Active Rules**: Behavioral constraints when in STRESSED or OVERLOADED state
+- **Recovery Status**: Whether you can safely return to NORMAL mode
+
+The response format is identical to the CLI output, ensuring consistency across interfaces.
+
+### Example Issue and Response
+
+**Your Issue:**
+```
+Non-movable deadlines (next 14 days): 4
+Active high-load domains: 3
+Energy (1–5, comma-separated): 2,3,2
+```
+
+**System Response:**
+```
+=== Personal Decision-Support System ===
+
+Current State: OVERLOADED
+Reason: You have 4 fixed deadlines (threshold: 3) and 3 active high-load domains (threshold: 3)
+
+Planning Permission: DENIED
+Execution Permission: DENIED
+Authority Mode: CONTAINMENT
+
+Active Rules:
+  • No new commitments
+  • Pause non-essential work
+  • Delegate or defer anything possible
+
+Recovery Status: Not ready
+You need to clear deadlines (currently 4, need ≤1) and reduce domains (currently 3, need ≤2)
+```
+
+### GitHub Interface Safety
+
+The GitHub interface maintains all safety guarantees:
+
+- **Read-only workflow**: The GitHub Actions workflow cannot modify your repository
+- **No external APIs**: The system only uses GitHub's own API for posting comments
+- **Frozen Decision Core**: The evaluation logic is identical to the CLI version
+- **Authority enforcement**: Planning and execution permissions are enforced the same way
+- **Deterministic output**: Same inputs always produce the same response
+
 ## Installation
 
 1. **Ensure Python 3.8+ is installed**

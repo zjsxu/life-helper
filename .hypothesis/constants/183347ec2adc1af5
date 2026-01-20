@@ -1,0 +1,4 @@
+# file: /Users/zhangjingsen/Desktop/playground/life-planner/pl_dss/plo_cli.py
+# hypothesis_version: 6.150.0
+
+[130, '(none)', '--config', '--deadlines', '--dimension', '--domains', '--energy', '--file', '--help', '--name', '--verbose', '-k', '-m', '-q', '-v', '=', 'ACTIVE RULES:', 'AUTHORITY:', 'Available commands', 'DIM', 'N', 'NAME', 'PATH', 'Run all scenarios', 'SCORE', 'STATE: ', 'Scenario commands', 'Scenario operations', 'TestAdvisory', 'TestAuthority', 'TestContainment', 'TestDecisionCore', 'TestSafetyBoundary', 'VALIDATION FAILURES:', '__main__', 'advisory', 'authority', 'command', 'config.yaml', 'containment', 'decision-core', 'evaluate', 'plo', 'pytest', 'python', 'run', 'run-all', 'safety-boundary', 'scenario', 'scenario_command', 'store_true', 'validate', 'validate-v03', 'with expected output']

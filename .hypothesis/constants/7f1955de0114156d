@@ -1,0 +1,4 @@
+# file: /Users/zhangjingsen/Desktop/playground/life-planner/scripts/run_from_issue.py
+# hypothesis_version: 6.150.0
+
+[130, '###\\s+', ',', 'ALLOWED', '\\[([^\\]]+)\\]', '\\b(due|by|-)\\b', '__main__', 'commitment', 'config.yaml', 'deadline', 'domain', 'energy', 'general', 'high-load', 'invalid literal', 'task']
